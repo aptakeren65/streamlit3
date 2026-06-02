@@ -151,7 +151,7 @@ with kolom_kiri:
         pilihan_input = st.radio("Pilih Jenis Komponen:", ["Titik Kota Baru ", "Jalur Antar Kota "], horizontal=True)
         st.write("---")
         
-        if pilihan_input == "Titik Kota Baru (Node)":
+        if pilihan_input == "Titik Kota Baru ":
             kota_baru = st.text_input("Nama Kota Baru", placeholder="Contoh: Malang").strip()
             if st.button("Konfirmasi Pendaftaran Kota", use_container_width=True):
                 if kota_baru and kota_baru not in graph:
