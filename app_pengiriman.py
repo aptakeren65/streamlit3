@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-from streamlit_agraph import agraph, Node, Edge, Config
+import streamlit.components.v1 as components
+import json
 
 # Konfigurasi halaman agar melebar penuh (Wide Mode)
 st.set_page_config(layout="wide", page_title="Logistics Graph App")
@@ -108,7 +109,7 @@ with kolom_kiri:
         asal_up = st.selectbox("Kota Asal", daftar_kota, key="u_asal")
         rute_ada = list(graph.get(asal_up, {}).keys())
         if rute_ada:
-            tujuan_up = st.selectbox("Kota Tujuan", rute_ada, key="u_tuj")
+            tujuan_up = st.selectbox("Pilih Kota Tujuan", rute_ada, key="u_tuj")
             jarak_baru = st.number_input("Perbarui Jarak Baru (km)", min_value=1, value=int(graph[asal_up][tujuan_up]))
             if st.button("Simpan Perubahan Jalur", use_container_width=True):
                 graph[asal_up][tujuan_up] = jarak_baru
@@ -144,15 +145,13 @@ with kolom_kiri:
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ------------------------------------------
-# KOLOM KANAN: LIVE INTERACTIVE GRAPH RADAR
+# KOLOM KANAN: LIVE INTERACTIVE GRAPH RADAR (ANTI-ERROR)
 # ------------------------------------------
 with kolom_kanan:
     st.markdown("<h3 style='color: #0f172a; font-size: 20px;'>🗺️ Peta Graph Interaktif (Real-time Radar)</h3>", unsafe_allow_html=True)
-    
     st.markdown('<div class="custom-card">', unsafe_allow_html=True)
     
-    # --- PROSES IDENTIFIKASI RUTE TERCEPAT / HUB TERBANYAK ---
-    # Cari kota mana yang punya rute paling banyak (Hub Utama)
+    # Perhitungan Hub Terbanyak
     hub_terbanyak = ""
     maks_rute = 0
     for kota, rute in graph.items():
@@ -160,11 +159,10 @@ with kolom_kanan:
             maks_rute = len(rute)
             hub_terbanyak = kota
 
-    # Cari rute dengan jarak paling pendek / tercepat secara keseluruhan
+    # Perhitungan Rute Tercepat
     rute_tercepat_asal = ""
     rute_tercepat_tujuan = ""
     jarak_terpendek = float('inf')
-    
     for kota_asal, tujuan_dict in graph.items():
         for kota_tujuan, jarak in tujuan_dict.items():
             if jarak < jarak_terpendek:
@@ -172,53 +170,56 @@ with kolom_kanan:
                 rute_tercepat_asal = kota_asal
                 rute_tercepat_tujuan = kota_tujuan
 
-    # --- MEMBANGUN GRAFIK AGRAPH ---
-    nodes = []
-    edges = []
+    # Membuat data JSON untuk dikirim ke Javascript Vis.js
+    vis_nodes = []
+    vis_edges = []
     
-    # 1. Daftarkan Semua Node (Kota)
     for kota in graph.keys():
-        # Jika kota tersebut adalah Hub Terbanyak, beri warna emas/kuning, jika tidak beri warna biru
         if kota == hub_terbanyak:
-            nodes.append(Node(id=kota, label=f"⭐ {kota} (Hub)", size=25, color="#f59e0b"))
+            vis_nodes.append({"id": kota, "label": f"⭐ {kota}", "color": "#f59e0b", "font": {"color": "#ffffff"}, "size": 30})
         else:
-            nodes.append(Node(id=kota, label=kota, size=20, color="#3b82f6"))
+            vis_nodes.append({"id": kota, "label": kota, "color": "#3b82f6", "font": {"color": "#ffffff"}, "size": 20})
             
-    # 2. Daftarkan Semua Edge (Garis Jalur)
     rute_tercatat = set()
     for kota_asal, tujuan_dict in graph.items():
         for kota_tujuan, jarak in tujuan_dict.items():
-            # Agar rute bolak-balik tidak digambar dua kali
             rute_id = tuple(sorted([kota_asal, kota_tujuan]))
             if rute_id not in rute_tercatat:
                 rute_tercatat.add(rute_id)
                 
-                # Highlight warna MERAH jika rute tersebut merupakan rute paling pendek/tercepat
-                if (kota_asal == rute_tercepat_asal and kota_tujuan == rute_tercepat_tujuan) or \
-                   (kota_asal == rute_tercepat_tujuan and kota_tujuan == rute_tercepat_asal):
-                    edges.append(Edge(source=kota_asal, target=kota_tujuan, label=f"🚀 TERCEPAT ({jarak}km)", color="#ef4444", strokeWidth=4))
+                is_tercepat = (kota_asal == rute_tercepat_asal and kota_tujuan == rute_tercepat_tujuan) or \
+                             (kota_asal == rute_tercepat_tujuan and kota_tujuan == rute_tercepat_asal)
+                
+                if is_tercepat:
+                    vis_edges.append({"from": kota_asal, "to": kota_tujuan, "label": f"🚀 {jarak}km", "color": "#ef4444", "width": 4})
                 else:
-                    edges.append(Edge(source=kota_asal, target=kota_tujuan, label=f"{jarak} km", color="#94a3b8", strokeWidth=2))
+                    vis_edges.append({"from": kota_asal, "to": kota_tujuan, "label": f"{jarak} km", "color": "#94a3b8", "width": 1.5})
 
-    # 3. Konfigurasi Tampilan Graph
-    config = Config(
-        width=650,
-        height=500,
-        directed=False, # Dua arah (Undirected Graph)
-        physics=True,   # Membuat efek membal/elastis saat digeser
-        hierarchical=False,
-        nodeHighlightBehavior=True,
-        highlightColor="#10b981"
-    )
+    # Kode HTML + Vis.js yang disisipkan langsung ke Streamlit
+    html_code = f"""
+    <div id="mynetwork" style="width: 100%; height: 500px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #ffffff;"></div>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script type="text/javascript">
+        var nodes = new vis.DataSet({json.dumps(vis_nodes)});
+        var edges = new vis.DataSet({json.dumps(vis_edges)});
+        var container = document.getElementById('mynetwork');
+        var data = {{ nodes: nodes, edges: edges }};
+        var options = {{
+            nodes: {{ shape: 'dot', font: {{ size: 14, face: 'Inter' }} }},
+            edges: {{ font: {{ align: 'top', size: 11 }} }},
+            physics: {{ stabilization: true, barnesHut: {{ gravitationalConstant: -2000, centralGravity: 0.3, springLength: 150 }} }}
+        }};
+        var network = new vis.Network(container, data, options);
+    </script>
+    """
     
-    # Render Graph ke halaman web
-    agraph(nodes=nodes, edges=edges, config=config)
+    # Render komponen HTML dengan aman
+    components.html(html_code, height=520)
     
-    # Keterangan Legenda Menu
     st.markdown("""
     **💡 Informasi Radar:**
     * 🟡 **Kota dengan Simbol ⭐ (Kuning)**: Adalah Hub Logistik utama (memiliki rute terbanyak).
     * 🔴 **Garis Merah Tebal**: Menandakan rute operasional langsung **paling pendek / tercepat** saat ini di sistem.
-    * *Tips: Anda bisa mengklik dan menggeser kota di atas secara langsung dengan mouse Anda!*
+    * *Tips: Anda bisa melakukan zoom in/out dan menggeser kota dengan leluasa.*
     """)
     st.markdown('</div>', unsafe_allow_html=True)
