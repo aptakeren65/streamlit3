@@ -195,4 +195,4 @@ with kolom_monitor:
     else:
         st.info("Sistem kosong. Belum ada manifes rute terdaftar.")
         
-    st.markdown('</div>',
+    st.markdown('</div>', unsafe_allow_html=True) # Tutup Card Monitor
