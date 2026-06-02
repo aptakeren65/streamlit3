@@ -3,88 +3,106 @@ import pandas as pd
 import streamlit.components.v1 as components
 import json
 
-# Konfigurasi halaman agar melebar penuh (Wide Mode)
-st.set_page_config(layout="wide", page_title="LOGIX - Graph Dashboard", page_icon="🚀")
+# Konfigurasi Halaman Mode Lebar & Judul Aplikasi
+st.set_page_config(layout="wide", page_title="LOGIX - Route Graph Navigator", page_icon="🚀")
 
 # ==========================================
-# 🎨 CSS KUSTOM: DESAIN PREMIUM UTAMA
+# 🎨 KUSTOMISASI CSS: ULTRA DARK DASHBOARD MODE
 # ==========================================
-def set_app_theme():
+def set_dark_app_theme():
     st.markdown(
         """
         <style>
-        /* Latar Belakang Aplikasi dengan Pola Grid */
+        /* Mengubah total warna background utama aplikasi */
         .stApp {
-            background-color: #f8fafc;
-            background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
-            background-size: 24px 24px;
+            background-color: #0f172a;
+            background-image: radial-gradient(#1e293b 2px, transparent 2px);
+            background-size: 30px 30px;
         }
         
-        /* Font Global */
+        /* Font Global Modern */
         html, body, [class*="css"]  {
             font-family: 'Inter', sans-serif;
+            color: #f1f5f9;
         }
         
-        /* Desain Kartu (Card Layout) */
+        /* Desain Kotak Kartu Aplikasi (Dark Glass Card) */
         div.custom-card {
-            background-color: #ffffff;
-            padding: 24px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 25px;
             border-radius: 16px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #334155;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
             margin-bottom: 24px;
-            border: 1px solid #e2e8f0;
         }
         
-        /* Kartu Khusus Informasi Jalur Tercepat */
-        div.fastest-card {
-            background: linear-gradient(135deg, #fef2f2 0%, #ffe4e6 100%);
-            padding: 16px;
-            border-radius: 12px;
-            border: 1px solid #fecdd3;
-            margin-bottom: 15px;
-        }
-        
-        /* Modifikasi Tampilan Tab CRUD */
+        /* Mengubah styling TAB agar menyatu dengan Tema Aplikasi */
         .stTabs [data-baseweb="tab-list"] {
             gap: 10px;
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 2px solid #334155;
         }
         .stTabs [data-baseweb="tab"] {
-            background-color: #f1f5f9;
+            background-color: #1e293b;
             border-radius: 8px 8px 0px 0px;
-            padding: 12px 24px;
-            font-weight: 700;
-            color: #475569;
+            padding: 10px 20px;
+            font-weight: bold;
+            color: #94a3b8;
+            border: 1px solid #334155;
         }
         .stTabs [aria-selected="true"] {
-            background-color: #0f172a !important;
+            background-color: #2563eb !important;
             color: white !important;
+            border-bottom: none !important;
+        }
+        
+        /* Mempercantik Input Teks & Select Box */
+        .stTextInput input, .stSelectbox div[data-baseweb="select"] {
+            background-color: #0f172a !important;
+            color: #f1f5f9 !important;
+            border: 1px solid #475569 !important;
+            border-radius: 8px !important;
+        }
+        
+        /* Tombol Utama (Confirm Button) */
+        .stButton button {
+            background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%) !important;
+            color: white !important;
+            border: none !important;
+            font-weight: bold !important;
+            padding: 12px 24px !important;
+            border-radius: 8px !important;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4) !important;
+            transition: all 0.2s ease;
+        }
+        .stButton button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6) !important;
         }
         </style>
         """,
         unsafe_allow_html=True
     )
 
-set_app_theme()
+set_dark_app_theme()
 
 # ==========================================
 # 📦 STATE MANAGEMENT (Data Graph)
 # ==========================================
 if 'graph' not in st.session_state:
     st.session_state.graph = {
-        "Jakarta": {"Bandung": 150, "Semarang": 450},
-        "Bandung": {"Jakarta": 150, "Semarang": 370},
-        "Semarang": {"Jakarta": 450, "Bandung": 370, "Surabaya": 350},
-        "Surabaya": {"Semarang": 350},
-        "Yogyakarta": {"Bandung": 400, "Semarang": 120}
+        "São Paulo": {"Rio de Janeiro": 430, "Curitiba": 408, "Belo Horizonte": 586},
+        "Rio de Janeiro": {"São Paulo": 430, "Belo Horizonte": 440},
+        "Curitiba": {"São Paulo": 408, "Stops": 150},
+        "Belo Horizonte": {"São Paulo": 586, "Rio de Janeiro": 440},
+        "Stops": {"Curitiba": 150, "São Paulo": 280}
     }
 
 graph = st.session_state.graph
 
 # ==========================================
-# 📊 ALGORITMA & PERHITUNGAN DATA GRAPH
+# 📊 LOGIKA OPERASIONAL GRAPH
 # ==========================================
-# 1. Cari Hub Utama (Koneksi terbanyak)
+# Menemukan Hub Utama (Rute terbanyak)
 hub_terbanyak = ""
 maks_rute = 0
 for kota, rute in graph.items():
@@ -92,9 +110,8 @@ for kota, rute in graph.items():
         maks_rute = len(rute)
         hub_terbanyak = kota
 
-# 2. Cari Jalur Langsung Tercepat (Jarak minimum)
-rute_tercepat_asal = ""
-rute_tercepat_tujuan = ""
+# Menemukan Rute Langsung Tercepat (Jarak Terpendek)
+rute_tercepat_asal, rute_tercepat_tujuan = "", ""
 jarak_terpendek = float('inf')
 for kota_asal, tujuan_dict in graph.items():
     for kota_tujuan, jarak in tujuan_dict.items():
@@ -103,147 +120,128 @@ for kota_asal, tujuan_dict in graph.items():
             rute_tercepat_asal = kota_asal
             rute_tercepat_tujuan = kota_tujuan
 
+total_kota = len(graph.keys())
+total_rute = sum([len(tujuan) for tujuan in graph.values()]) // 2
+
 # ==========================================
 # 📐 LAYOUT UTAMA DASHBOARD
 # ==========================================
 
-# Top Bar / Header Utama
-st.markdown("<h1 style='color: #0f172a; margin-bottom: 0; font-weight: 800; font-size: 32px;'>🚀 LOGIX - Dashboard Logistik</h1>", unsafe_allow_html=True)
-st.markdown("<p style='color: #64748b; margin-top: 5px; margin-bottom: 30px; font-size: 16px;'>Manajemen Graph Jaringan Distribusi dan Rute Pengiriman Real-Time</p>", unsafe_allow_html=True)
+# Top Header Aplikasi
+st.markdown("<h1 style='text-align: center; color: #ffffff; font-weight: 800; font-size: 36px; margin-bottom:0;'>🚀 LOGIX - Route Graph Navigator</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #94a3b8; font-size: 16px; margin-top:5px; margin-bottom:40px;'>Sistema de Gestão de Nodes e Rotas de Distribuição Logística Perusahaan</p>", unsafe_allow_html=True)
 
-# Pembagian Dua Kolom Utama (Kiri: Manajemen & Manifes | Kanan: Visualisasi & Metrik)
-kolom_kiri, kolom_kanan = st.columns([1.1, 1.3], gap="large")
+# Membagi Layar Menjadi Dua Panel Utama (Kiri: CRUD & Manifes | Kanan: Radar Maps)
+kolom_kiri, kolom_kanan = st.columns([1, 1.4], gap="large")
 
 # ------------------------------------------
-# ⚙️ KOLOM KIRI: PANEL OPERASIONAL (CRUD)
+# ⚙️ KOLOM KIRI: PAINEL DE GESTÃO (CRUD)
 # ------------------------------------------
 with kolom_kiri:
-    st.markdown("<h3 style='color: #0f172a; font-size: 20px; font-weight: 700; margin-bottom:15px;'>⚙️ Kontrol Data Jaringan</h3>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #94a3b8; margin-bottom: 12px;'>⚙️ Painel de Gestão e CRUD</h4>", unsafe_allow_html=True)
     
-    # Boks Kartu Form CRUD
+    # Bungkus Panel ke dalam Box Card Aplikasi
     st.markdown('<div class="custom-card">', unsafe_allow_html=True)
-    tab1, tab2, tab3 = st.tabs(["➕ TAMBAH DATA", "🔄 UPDATE JARAK", "❌ HAPUS DATA"])
+    tab1, tab2, tab3 = st.tabs(["➕ ADICIONAR DADO", "🔄 ATUALIZAR DISTÂNCIA", "❌ APAGAR DADO"])
     
-    # 1. CREATE ACTION
+    # Tab 1: Create
     with tab1:
         st.write("##")
-        pilihan_input = st.radio("Pilih Jenis Data Baru:", ["Titik Kota (Node)", "Jalur Rute (Edge)"], horizontal=True)
+        pilihan_input = st.radio("Pilih Jenis Komponen:", ["Node da Cidade (Kota)", "Rota Entre Cidades (Rute)"], horizontal=True)
         st.write("---")
         
-        if pilihan_input == "Titik Kota (Node)":
-            kota_baru = st.text_input("Nama Kota Baru", placeholder="Contoh: Malang").strip()
-            if st.button("Daftarkan Kota Baru", use_container_width=True):
+        if pilihan_input == "Node da Cidade (Kota)":
+            kota_baru = st.text_input("Nome da Nova Cidade (Nama Kota Baru)", placeholder="Contoh: Curitiba").strip()
+            if st.button("Confirmar Registro (Simpan Kota)", use_container_width=True):
                 if kota_baru and kota_baru not in graph:
                     graph[kota_baru] = {}
-                    st.success(f"Berhasil: Kota '{kota_baru}' kini aktif di jaringan.")
+                    st.success(f"Kota {kota_baru} Berhasil Terdaftar!")
                     st.rerun()
-                elif kota_baru in graph:
-                    st.warning("Peringatan: Kota tersebut sudah terdaftar.")
         else:
             daftar_kota = list(graph.keys())
             if len(daftar_kota) >= 2:
-                asal = st.selectbox("Kota Asal", daftar_kota, key="c_asal")
-                tujuan = st.selectbox("Kota Tujuan", daftar_kota, key="c_tuj")
-                jarak = st.number_input("Jarak Operasional (km)", min_value=1, value=100)
-                if st.button("Hubungkan Rute Distribusi", use_container_width=True):
+                asal = st.selectbox("Origem (Kota Asal)", daftar_kota, key="c_asal")
+                tujuan = st.selectbox("Destino (Kota Tujuan)", daftar_kota, key="c_tuj")
+                jarak = st.number_input("Jarak (km)", min_value=1, value=100)
+                if st.button("Confirmar Registro (Simpan Rute)", use_container_width=True):
                     if asal != tujuan:
                         graph[asal][tujuan] = jarak
                         graph[tujuan][asal] = jarak
-                        st.success(f"Berhasil: Jalur {asal} ↔️ {tujuan} aktif.")
+                        st.success("Rute Berhasil Dihubungkan!")
                         st.rerun()
-                    else:
-                        st.error("Kesalahan: Kota asal dan tujuan tidak boleh sama.")
-            else:
-                st.info("Info: Harap daftarkan minimal 2 kota terlebih dahulu.")
     
-    # 2. UPDATE ACTION
+    # Tab 2: Update
     with tab2:
         st.write("##")
         daftar_kota = list(graph.keys())
-        if daftar_kota:
-            asal_up = st.selectbox("Pilih Kota Asal", daftar_kota, key="u_asal")
-            rute_ada = list(graph.get(asal_up, {}).keys())
-            if rute_ada:
-                tujuan_up = st.selectbox("Pilih Kota Tujuan", rute_ada, key="u_tuj")
-                jarak_baru = st.number_input("Sesuaikan Jarak Baru (km)", min_value=1, value=int(graph[asal_up][tujuan_up]))
-                if st.button("Perbarui Data Jarak", use_container_width=True):
-                    graph[asal_up][tujuan_up] = jarak_baru
-                    graph[tujuan_up][asal_up] = jarak_baru
-                    st.success("Berhasil: Jarak operasional diperbarui.")
-                    st.rerun()
-            else:
-                st.info(f"Kota {asal_up} belum memiliki jalur keluar.")
+        asal_up = st.selectbox("Origem (Kota Asal)", daftar_kota, key="u_asal")
+        rute_ada = list(graph.get(asal_up, {}).keys())
+        if rute_ada:
+            tujuan_up = st.selectbox("Destino (Kota Tujuan)", rute_ada, key="u_tuj")
+            jarak_baru = st.number_input("Jarak Baru (km)", min_value=1, value=int(graph[asal_up][tujuan_up]))
+            if st.button("Atualizar (Update Jarak)", use_container_width=True):
+                graph[asal_up][tujuan_up] = jarak_baru
+                graph[tujuan_up][asal_up] = jarak_baru
+                st.success("Jarak Rute Berhasil Diperbarui!")
+                st.rerun()
         else:
-            st.info("Belum ada data kota.")
+            st.info("Kota ini belum memiliki rute.")
 
-    # 3. DELETE ACTION
+    # Tab 3: Delete
     with tab3:
         st.write("##")
         daftar_kota = list(graph.keys())
-        if daftar_kota:
-            kota_del = st.selectbox("Pilih Kota yang Ingin Dihapus", daftar_kota, key="d_kota")
-            st.markdown("<p style='color: #ef4444; font-size: 14px; font-weight: 500;'>⚠️ Perhatian: Menghapus kota ini akan otomatis menghapus seluruh rute pengiriman yang terhubung dengannya!</p>", unsafe_allow_html=True)
-            if st.button("Hapus Kota dari Jaringan", type="primary", use_container_width=True):
-                for tetangga in list(graph[kota_del].keys()):
-                    del graph[tetangga][kota_del]
-                del graph[kota_del]
-                st.success(f"Sukses: Kota {kota_del} telah dihapus.")
-                st.rerun()
-        else:
-            st.info("Tidak ada data kota untuk dihapus.")
+        kota_del = st.selectbox("Pilih Kota yang Akan Dihapus", daftar_kota, key="d_kota")
+        if st.button("Apagar Dado (Hapus Kota Total)", type="primary", use_container_width=True):
+            for tetangga in list(graph[kota_del].keys()):
+                del graph[tetangga][kota_del]
+            del graph[kota_del]
+            st.success("Data Kota Berhasil Dihapus!")
+            st.rerun()
             
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Manifes Live Data (Tabel)
-    st.markdown('<div class="custom-card">', unsafe_allow_html=True)
-    st.markdown("<p style='font-weight: 700; color: #0f172a; margin-top:0; font-size:16px;'>📋 Manifes Data Tabel</p>", unsafe_allow_html=True)
-    data_tabel = []
-    for kota_asal, tujuan_dict in graph.items():
-        for kota_tujuan, jarak in tujuan_dict.items():
-            data_tabel.append({"Kota Asal": kota_asal, "Kota Tujuan": kota_tujuan, "Jarak": f"{jarak} km"})
-    if data_tabel:
-        st.dataframe(pd.DataFrame(data_tabel), use_container_width=True, hide_index=True)
-    else:
-        st.caption("Jaringan kosong.")
-    st.markdown('</div>', unsafe_allow_html=True)
+    # Info Manifest Mini Panel di bawah CRUD
+    st.markdown("<h4 style='color: #94a3b8; margin-bottom: 12px;'>📋 Manifesto de Dados de Rota (Live)</h4>", unsafe_allow_html=True)
+    col_inf1, col_inf2, col_inf3 = st.columns(3)
+    with col_inf1:
+        st.markdown(f'<div class="custom-card" style="text-align:center; padding:15px;"><span style="color:#64748b; font-size:12px;">NODES TOTAIS</span><br><strong style="font-size:24px; color:#3b82f6;">{total_kota}</strong></div>', unsafe_allow_html=True)
+    with col_inf2:
+        st.markdown(f'<div class="custom-card" style="text-align:center; padding:15px;"><span style="color:#64748b; font-size:12px;">ROTAS TOTAIS</span><br><strong style="font-size:24px; color:#10b981;">{total_rute}</strong></div>', unsafe_allow_html=True)
+    with col_inf3:
+        st.markdown(f'<div class="custom-card" style="text-align:center; padding:15px;"><span style="color:#64748b; font-size:12px;">OPERASI UTAMA</span><br><strong style="font-size:14px; color:#f59e0b;">{hub_terbanyak}</strong></div>', unsafe_allow_html=True)
 
 # ------------------------------------------
-# 🗺️ KOLOM KANAN: MONITOR LIVE & METRIK GRAPH
+# 🗺️ KOLOM KANAN: RADAR MAPS REAL-TIME
 # ------------------------------------------
 with kolom_kanan:
-    st.markdown("<h3 style='color: #0f172a; font-size: 20px; font-weight: 700; margin-bottom:15px;'>🗺️ Peta Radar & Metrik Jaringan</h3>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #94a3b8; margin-bottom: 12px;'>🗺️ Mapa Interaktif de Rede (Radar Real-time)</h4>", unsafe_allow_html=True)
     
-    # 1. Baris Metrik Ringkasan di Bagian Atas
-    total_kota = len(graph.keys())
-    total_rute = sum([len(tujuan) for tujuan in graph.values()]) // 2
+    st.markdown('<div class="custom-card" style="background-color: #0b1329;">', unsafe_allow_html=True)
     
-    col_m1, col_m2 = st.columns(2)
-    with col_m1:
-        st.markdown(f'<div class="custom-card"><span style="color:#64748b; font-size:14px; font-weight:500;">Total Node Jaringan</span><br><strong style="font-size:28px; color:#0f172a;">{total_kota} Kota</strong></div>', unsafe_allow_html=True)
-    with col_m2:
-        st.markdown(f'<div class="custom-card"><span style="color:#64748b; font-size:14px; font-weight:500;">Total Rute Aktif</span><br><strong style="font-size:28px; color:#0f172a;">{total_rute} Jalur</strong></div>', unsafe_allow_html=True)
+    # 3 Kotak Indikator Mini di Atas Gambar Peta
+    col_ind1, col_ind2, col_ind3 = st.columns(3)
+    with col_ind1:
+        st.markdown(f'<p style="color:#64748b; font-size:11px; margin-bottom:2px;">TOTAL DE CIDADES (NODES)</p><h5 style="color:#ffffff; margin-top:0;">👥 {total_kota} Cidades</h5>', unsafe_allow_html=True)
+    with col_ind2:
+        st.markdown(f'<p style="color:#64748b; font-size:11px; margin-bottom:2px;">TOTAL DE ROTAS (EDGES)</p><h5 style="color:#ffffff; margin-top:0;">🔀 {total_rute} Rotas</h5>', unsafe_allow_html=True)
+    with col_ind3:
+        if rute_tercepat_asal:
+            st.markdown(f'<p style="color:#ef4444; font-size:11px; margin-bottom:2px; font-weight:bold;">🚀 ROTA MAIS EFICIENTE ATUAL</p><h5 style="color:#ffffff; margin-top:0;">{rute_tercepat_asal} → {rute_tercepat_tujuan}</h5>', unsafe_allow_html=True)
+        else:
+            st.markdown('<p style="color:#64748b; font-size:11px; margin-bottom:2px;">ROTA MAIS EFICIENTE ATUAL</p><h5 style="color:#ffffff; margin-top:0;">-</h5>', unsafe_allow_html=True)
+            
+    st.write("---")
     
-    # 2. Boks Visualisasi Graph Utama
-    st.markdown('<div class="custom-card">', unsafe_allow_html=True)
-    
-    # Tampilkan Banner Rute Tercepat di atas Peta Graf jika ada rute
-    if rute_tercepat_asal and jarak_terpendek != float('inf'):
-        st.markdown(f"""
-        <div class="fastest-card">
-            <span style="color: #b91c1c; font-weight: 700; font-size: 13px;">🚀 RUTE TERCEPAT SAAT INI</span><br>
-            <strong style="color: #991b1b; font-size: 16px;">{rute_tercepat_asal} ↔️ {rute_tercepat_tujuan} ({jarak_terpendek} km)</strong>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # Mempersiapkan Konfigurasi Node dan Edge untuk JavaScript Vis.js
+    # Menyiapkan data Node & Edge JSON untuk JavaScript Vis.js (Tema Glow-Dark)
     vis_nodes = []
     vis_edges = []
     
     for kota in graph.keys():
-        if kota == hub_terbanyak and len(graph[kota]) > 0:
-            vis_nodes.append({"id": kota, "label": f"⭐ {kota}\n(HUB UTAMA)", "color": {"background": "#f59e0b", "border": "#d97706"}, "font": {"color": "#ffffff", "size": 13, "bold": True}, "size": 26})
+        if kota == hub_terbanyak:
+            vis_nodes.append({"id": kota, "label": f"⭐ {kota}\n(HUB)", "color": {"background": "#f59e0b", "border": "#d97706"}, "font": {"color": "#ffffff", "size": 13, "bold": True}, "size": 25})
         else:
-            vis_nodes.append({"id": kota, "label": kota, "color": {"background": "#3b82f6", "border": "#1d4ed8"}, "font": {"color": "#ffffff", "size": 12}, "size": 18})
+            vis_nodes.append({"id": kota, "label": kota, "color": {"background": "#38bdf8", "border": "#0284c7"}, "font": {"color": "#cbd5e1", "size": 12}, "size": 16})
             
     rute_tercatat = set()
     for kota_asal, tujuan_dict in graph.items():
@@ -252,43 +250,32 @@ with kolom_kanan:
             if rute_id not in rute_tercatat:
                 rute_tercatat.add(rute_id)
                 
-                # Cek apakah rute ini adalah rute tercepat
                 is_tercepat = (kota_asal == rute_tercepat_asal and kota_tujuan == rute_tercepat_tujuan) or \
                              (kota_asal == rute_tercepat_tujuan and kota_tujuan == rute_tercepat_asal)
                 
                 if is_tercepat:
-                    vis_edges.append({"from": kota_asal, "to": kota_tujuan, "label": f"🚀 {jarak} km", "color": {"color": "#ef4444", "highlight": "#dc2626"}, "width": 4, "font": {"color": "#b91c1c", "strokeWidth": 2, "strokeColor": "#ffffff"}})
+                    vis_edges.append({"from": kota_asal, "to": kota_tujuan, "label": f"🚀 {jarak} km", "color": {"color": "#f43f5e", "highlight": "#f43f5e"}, "width": 4.5, "font": {"color": "#f43f5e", "strokeWidth": 0}})
                 else:
-                    vis_edges.append({"from": kota_asal, "to": kota_tujuan, "label": f"{jarak} km", "color": {"color": "#cbd5e1", "highlight": "#94a3b8"}, "width": 1.5, "font": {"color": "#475569"}})
+                    vis_edges.append({"from": kota_asal, "to": kota_tujuan, "label": f"{jarak} km", "color": {"color": "#475569", "highlight": "#64748b"}, "width": 1.5, "font": {"color": "#94a3b8", "strokeWidth": 0}})
 
-    # Script HTML Vis.js
+    # Memasukkan Script HTML Vis.js dengan konfigurasi Dark-Blue Glow
     html_code = f"""
-    <div id="network-layout" style="width: 100%; height: 420px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;"></div>
+    <div id="mynetwork" style="width: 100%; height: 460px; background-color: #0b1329; border: 1px solid #1e293b; border-radius: 12px;"></div>
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <script type="text/javascript">
         var nodes = new vis.DataSet({json.dumps(vis_nodes)});
         var edges = new vis.DataSet({json.dumps(vis_edges)});
-        var container = document.getElementById('network-layout');
+        var container = document.getElementById('mynetwork');
         var data = {{ nodes: nodes, edges: edges }};
         var options = {{
             nodes: {{ shape: 'dot', font: {{ face: 'Inter' }} }},
-            edges: {{ font: {{ align: 'horizontal' }} }},
-            physics: {{ stabilization: true, barnesHut: {{ gravitationalConstant: -1800, springLength: 140 }} }}
+            edges: {{ font: {{ align: 'top' }} }},
+            physics: {{ stabilization: true, barnesHut: {{ gravitationalConstant: -1500, centralGravity: 0.4, springLength: 130 }} }}
         }};
         var network = new vis.Network(container, data, options);
     </script>
     """
     
-    # Jalankan Peta Jaringan
-    components.html(html_code, height=440)
-    
-    # Legenda Peta
-    st.markdown("""
-    <div style="background-color: #f1f5f9; padding: 12px; border-radius: 8px; font-size: 13px; color: #475569;">
-        <strong>💡 Panduan Navigasi Radar:</strong><br>
-        • Kota berwarna <span style="color:#d97706; font-weight:bold;">Kuning (⭐)</span> berstatus sebagai pusat penghubung (Hub) logistik terpadat.<br>
-        • Jalur berwarna <span style="color:#ef4444; font-weight:bold;">Merah Tebal (🚀)</span> adalah rute operasional langsung dengan jarak tempuh paling efisien/tercepat.<br>
-        • Anda bisa melakukan <em>zoom in/out</em> serta menggeser posisi kota secara fleksibel pada kanvas.
-    </div>
-    """, unsafe_allow_html=True)
+    components.html(html_code, height=480)
+    st.markdown("<p style='color: #64748b; font-size: 12px; text-align: center; margin-top:10px;'>⚡ ROTA MAIS RÁPIDA (🚀 TERCEPAT) di-highlight dengan jalur merah menyala secara real-time.</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
