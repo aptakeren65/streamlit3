@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 import json
 
 # Konfigurasi Halaman Mode Lebar & Judul Aplikasi
-st.set_page_config(layout="wide", page_title="LOGIX - Navigator Rute Jaringan", page_icon="🚀")
+st.set_page_config(layout="wide", page_title="Rute Pengiriman", page_icon="🚀")
 
 # ==========================================
 # 🎨 KUSTOMISASI CSS: ULTRA DARK & WHITE TEXT MODE
@@ -131,8 +131,8 @@ total_rute = sum([len(tujuan) for tujuan in graph.values()]) // 2
 # 📐 LAYOUT UTAMA DASHBOARD
 # ==========================================
 
-st.markdown("<h1 style='text-align: center; color: #ffffff; font-weight: 800; font-size: 36px; margin-bottom:0;'>🚀 LOGIX - Navigator Rute Jaringan</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #94a3b8; font-size: 16px; margin-top:5px; margin-bottom:40px;'>Sistem Manajemen Node dan Rute Distribusi Logistik Perusahaan</p>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #ffffff; font-weight: 800; font-size: 36px; margin-bottom:0;'>🚀 Rute Pengiriman </h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #94a3b8; font-size: 16px; margin-top:5px; margin-bottom:40px;'>Sistem Rute Logistik Perusahaan</p>", unsafe_allow_html=True)
 
 kolom_kiri, kolom_kanan = st.columns([1, 1.4], gap="large")
 
@@ -140,7 +140,7 @@ kolom_kiri, kolom_kanan = st.columns([1, 1.4], gap="large")
 # ⚙️ KOLOM KIRI: PANEL MANAJEMEN DATA (CRUD)
 # ------------------------------------------
 with kolom_kiri:
-    st.markdown("<h4 style='color: #ffffff; margin-bottom: 12px; font-weight:700;'>⚙️ Panel Kontrol Operasional</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #ffffff; margin-bottom: 12px; font-weight:700;'>⚙️ Kontrol Operasional</h4>", unsafe_allow_html=True)
     
     st.markdown('<div class="custom-card">', unsafe_allow_html=True)
     tab1, tab2, tab3 = st.tabs(["➕ TAMBAH DATA", "🔄 UPDATE JARAK", "❌ HAPUS DATA"])
