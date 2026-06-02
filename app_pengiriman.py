@@ -233,9 +233,9 @@ with kolom_kanan:
     
     col_ind1, col_ind2, col_ind3 = st.columns(3)
     with col_ind1:
-        st.markdown(f'<p style="color:#94a3b8; font-size:11px; margin-bottom:2px; font-weight:600;">TOTAL KOTA (NODES)</p><h5 style="color:#ffffff; margin-top:0; font-weight:700;">👥 {total_kota} Kota</h5>', unsafe_allow_html=True)
+        st.markdown(f'<p style="color:#94a3b8; font-size:11px; margin-bottom:2px; font-weight:600;">TOTAL KOTA</p><h5 style="color:#ffffff; margin-top:0; font-weight:700;">👥 {total_kota} Kota</h5>', unsafe_allow_html=True)
     with col_ind2:
-        st.markdown(f'<p style="color:#94a3b8; font-size:11px; margin-bottom:2px; font-weight:600;">TOTAL RUTE (EDGES)</p><h5 style="color:#ffffff; margin-top:0; font-weight:700;">🔀 {total_rute} Jalur</h5>', unsafe_allow_html=True)
+        st.markdown(f'<p style="color:#94a3b8; font-size:11px; margin-bottom:2px; font-weight:600;">TOTAL RUTE</p><h5 style="color:#ffffff; margin-top:0; font-weight:700;">🔀 {total_rute} Jalur</h5>', unsafe_allow_html=True)
     with col_ind3:
         if rute_tercepat_asal:
             st.markdown(f'<p style="color:#f43f5e; font-size:11px; margin-bottom:2px; font-weight:bold;">🚀 RUTE TERCEPAT SAAT INI</p><h5 style="color:#ffffff; margin-top:0; font-weight:700;">{rute_tercepat_asal} ↔️ {rute_tercepat_tujuan} ({jarak_terpendek} km)</h5>', unsafe_allow_html=True)
@@ -288,5 +288,5 @@ with kolom_kanan:
     """
     
     components.html(html_code, height=480)
-    st.markdown("<p style='color: #94a3b8; font-size: 12px; text-align: center; margin-top:10px;'>⚡ RUTE TERCEPAT di-highlight otomatis dengan jalur warna merah menyala secara real-time.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #94a3b8; font-size: 12px; text-align: center; margin-top:10px;'>⚡ RUTE TERCEPAT di-highlight otomatis dengan jalur warna merah menyala secara real-time.</p>", unsafe_allow_html=True) 
     st.markdown('</div>', unsafe_allow_html=True)
