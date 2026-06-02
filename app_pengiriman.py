@@ -7,7 +7,7 @@ import json
 st.set_page_config(layout="wide", page_title="LOGIX - Navigator Rute Jaringan", page_icon="🚀")
 
 # ==========================================
-# 🎨 KUSTOMISASI CSS: ULTRA DARK DASHBOARD MODE
+# 🎨 KUSTOMISASI CSS: ULTRA DARK & WHITE TEXT MODE
 # ==========================================
 def set_dark_app_theme():
     st.markdown(
@@ -20,10 +20,16 @@ def set_dark_app_theme():
             background-size: 30px 30px;
         }
         
-        /* Font Global Modern */
-        html, body, [class*="css"]  {
+        /* Font Global & Warna Teks Utama Jadi Putih */
+        html, body, [class*="css"], .stMarkdown, p, h1, h2, h3, h4, h5, h6 {
             font-family: 'Inter', sans-serif;
-            color: #f1f5f9;
+            color: #ffffff !important;
+        }
+        
+        /* Memaksa label input dan judul komponen menjadi putih */
+        label, .stRadio legend, div[data-testid="stWidgetLabel"] p {
+            color: #ffffff !important;
+            font-weight: 600 !important;
         }
         
         /* Desain Kotak Kartu Aplikasi (Dark Glass Card) */
@@ -46,19 +52,19 @@ def set_dark_app_theme():
             border-radius: 8px 8px 0px 0px;
             padding: 10px 20px;
             font-weight: bold;
-            color: #94a3b8;
+            color: #cbd5e1 !important; /* Warna tab tidak aktif dibuat abu terang agar terbaca */
             border: 1px solid #334155;
         }
         .stTabs [aria-selected="true"] {
             background-color: #2563eb !important;
-            color: white !important;
+            color: #ffffff !important;
             border-bottom: none !important;
         }
         
         /* Mempercantik Input Teks & Select Box */
         .stTextInput input, .stSelectbox div[data-baseweb="select"] {
             background-color: #0f172a !important;
-            color: #f1f5f9 !important;
+            color: #ffffff !important;
             border: 1px solid #475569 !important;
             border-radius: 8px !important;
         }
@@ -66,7 +72,7 @@ def set_dark_app_theme():
         /* Tombol Utama (Confirm Button) */
         .stButton button {
             background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%) !important;
-            color: white !important;
+            color: #ffffff !important;
             border: none !important;
             font-weight: bold !important;
             padding: 12px 24px !important;
@@ -102,7 +108,6 @@ graph = st.session_state.graph
 # ==========================================
 # 📊 LOGIKA OPERASIONAL GRAPH
 # ==========================================
-# Menemukan Hub Utama (Rute terbanyak)
 hub_terbanyak = ""
 maks_rute = 0
 for kota, rute in graph.items():
@@ -110,7 +115,6 @@ for kota, rute in graph.items():
         maks_rute = len(rute)
         hub_terbanyak = kota
 
-# Menemukan Rute Langsung Tercepat (Jarak Terpendek)
 rute_tercepat_asal, rute_tercepat_tujuan = "", ""
 jarak_terpendek = float('inf')
 for kota_asal, tujuan_dict in graph.items():
@@ -127,20 +131,17 @@ total_rute = sum([len(tujuan) for tujuan in graph.values()]) // 2
 # 📐 LAYOUT UTAMA DASHBOARD
 # ==========================================
 
-# Header Atas Aplikasi
 st.markdown("<h1 style='text-align: center; color: #ffffff; font-weight: 800; font-size: 36px; margin-bottom:0;'>🚀 LOGIX - Navigator Rute Jaringan</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #94a3b8; font-size: 16px; margin-top:5px; margin-bottom:40px;'>Sistem Manajemen Node dan Rute Distribusi Logistik Perusahaan</p>", unsafe_allow_html=True)
 
-# Membagi Layar Menjadi Dua Panel Utama
 kolom_kiri, kolom_kanan = st.columns([1, 1.4], gap="large")
 
 # ------------------------------------------
 # ⚙️ KOLOM KIRI: PANEL MANAJEMEN DATA (CRUD)
 # ------------------------------------------
 with kolom_kiri:
-    st.markdown("<h4 style='color: #94a3b8; margin-bottom: 12px;'>⚙️ Panel Kontrol Operasional</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #ffffff; margin-bottom: 12px; font-weight:700;'>⚙️ Panel Kontrol Operasional</h4>", unsafe_allow_html=True)
     
-    # Bungkus Panel ke dalam Box Card Aplikasi
     st.markdown('<div class="custom-card">', unsafe_allow_html=True)
     tab1, tab2, tab3 = st.tabs(["➕ TAMBAH DATA", "🔄 UPDATE JARAK", "❌ HAPUS DATA"])
     
@@ -162,8 +163,8 @@ with kolom_kiri:
         else:
             daftar_kota = list(graph.keys())
             if len(daftar_kota) >= 2:
-                asal = st.selectbox("Kota Asal (Origem)", daftar_kota, key="c_asal")
-                tujuan = st.selectbox("Kota Tujuan (Destino)", daftar_kota, key="c_tuj")
+                asal = st.selectbox("Kota Asal", daftar_kota, key="c_asal")
+                tujuan = st.selectbox("Kota Tujuan", daftar_kota, key="c_tuj")
                 jarak = st.number_input("Jarak Operasional (km)", min_value=1, value=100)
                 if st.button("Hubungkan Rute Baru", use_container_width=True):
                     if asal != tujuan:
@@ -200,7 +201,7 @@ with kolom_kiri:
         daftar_kota = list(graph.keys())
         if daftar_kota:
             kota_del = st.selectbox("Pilih Kota yang Ingin Dihapus", daftar_kota, key="d_kota")
-            st.markdown("<p style='color: #f43f5e; font-size: 14px; font-weight: 500;'>⚠️ Perhatian: Menghapus kota ini otomatis memutus semua rute pengiriman yang terhubung dengannya!</p>", unsafe_allow_html=True)
+            st.markdown("<p style='color: #f43f5e; font-size: 14px; font-weight: bold;'>⚠️ Perhatian: Menghapus kota ini otomatis memutus semua rute pengiriman yang terhubung dengannya!</p>", unsafe_allow_html=True)
             if st.button("Hapus Kota Total dari Jaringan", type="primary", use_container_width=True):
                 for tetangga in list(graph[kota_del].keys()):
                     del graph[tetangga][kota_del]
@@ -213,34 +214,33 @@ with kolom_kiri:
     st.markdown('</div>', unsafe_allow_html=True)
 
     # Panel Manifes Ringkasan Data Live
-    st.markdown("<h4 style='color: #94a3b8; margin-bottom: 12px;'>📋 Manifes Data Distribusi (Live)</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #ffffff; margin-bottom: 12px; font-weight:700;'>📋 Manifes Data Distribusi (Live)</h4>", unsafe_allow_html=True)
     col_inf1, col_inf2, col_inf3 = st.columns(3)
     with col_inf1:
-        st.markdown(f'<div class="custom-card" style="text-align:center; padding:15px;"><span style="color:#64748b; font-size:12px;">TOTAL KOTA</span><br><strong style="font-size:24px; color:#3b82f6;">{total_kota}</strong></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="custom-card" style="text-align:center; padding:15px;"><span style="color:#94a3b8; font-size:12px; font-weight:600;">TOTAL KOTA</span><br><strong style="font-size:24px; color:#38bdf8;">{total_kota}</strong></div>', unsafe_allow_html=True)
     with col_inf2:
-        st.markdown(f'<div class="custom-card" style="text-align:center; padding:15px;"><span style="color:#64748b; font-size:12px;">TOTAL JALUR</span><br><strong style="font-size:24px; color:#10b981;">{total_rute}</strong></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="custom-card" style="text-align:center; padding:15px;"><span style="color:#94a3b8; font-size:12px; font-weight:600;">TOTAL JALUR</span><br><strong style="font-size:24px; color:#34d399;">{total_rute}</strong></div>', unsafe_allow_html=True)
     with col_inf3:
-        st.markdown(f'<div class="custom-card" style="text-align:center; padding:15px;"><span style="color:#64748b; font-size:12px;">HUB UTAMA</span><br><strong style="font-size:15px; color:#f59e0b;">{hub_terbanyak if hub_terbanyak else "-"}</strong></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="custom-card" style="text-align:center; padding:15px;"><span style="color:#94a3b8; font-size:12px; font-weight:600;">HUB UTAMA</span><br><strong style="font-size:15px; color:#fbbf24;">{hub_terbanyak if hub_terbanyak else "-"}</strong></div>', unsafe_allow_html=True)
 
 # ------------------------------------------
 # 🗺️ KOLOM KANAN: RADAR MAPS INTERAKTIF REAL-TIME
 # ------------------------------------------
 with kolom_kanan:
-    st.markdown("<h4 style='color: #94a3b8; margin-bottom: 12px;'>🗺️ Peta Jaringan Interaktif (Radar Real-Time)</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #ffffff; margin-bottom: 12px; font-weight:700;'>🗺️ Peta Jaringan Interaktif (Radar Real-Time)</h4>", unsafe_allow_html=True)
     
     st.markdown('<div class="custom-card" style="background-color: #0b1329;">', unsafe_allow_html=True)
     
-    # 3 Kotak Indikator Indeks di Atas Peta Graf
     col_ind1, col_ind2, col_ind3 = st.columns(3)
     with col_ind1:
-        st.markdown(f'<p style="color:#64748b; font-size:11px; margin-bottom:2px;">TOTAL KOTA (NODES)</p><h5 style="color:#ffffff; margin-top:0;">👥 {total_kota} Kota Registered</h5>', unsafe_allow_html=True)
+        st.markdown(f'<p style="color:#94a3b8; font-size:11px; margin-bottom:2px; font-weight:600;">TOTAL KOTA (NODES)</p><h5 style="color:#ffffff; margin-top:0; font-weight:700;">👥 {total_kota} Kota</h5>', unsafe_allow_html=True)
     with col_ind2:
-        st.markdown(f'<p style="color:#64748b; font-size:11px; margin-bottom:2px;">TOTAL RUTE (EDGES)</p><h5 style="color:#ffffff; margin-top:0;">🔀 {total_rute} Jalur Aktif</h5>', unsafe_allow_html=True)
+        st.markdown(f'<p style="color:#94a3b8; font-size:11px; margin-bottom:2px; font-weight:600;">TOTAL RUTE (EDGES)</p><h5 style="color:#ffffff; margin-top:0; font-weight:700;">🔀 {total_rute} Jalur</h5>', unsafe_allow_html=True)
     with col_ind3:
         if rute_tercepat_asal:
-            st.markdown(f'<p style="color:#f43f5e; font-size:11px; margin-bottom:2px; font-weight:bold;">🚀 RUTE TERCEPAT SAAT INI</p><h5 style="color:#ffffff; margin-top:0;">{rute_tercepat_asal} ↔️ {rute_tercepat_tujuan} ({jarak_terpendek} km)</h5>', unsafe_allow_html=True)
+            st.markdown(f'<p style="color:#f43f5e; font-size:11px; margin-bottom:2px; font-weight:bold;">🚀 RUTE TERCEPAT SAAT INI</p><h5 style="color:#ffffff; margin-top:0; font-weight:700;">{rute_tercepat_asal} ↔️ {rute_tercepat_tujuan} ({jarak_terpendek} km)</h5>', unsafe_allow_html=True)
         else:
-            st.markdown('<p style="color:#64748b; font-size:11px; margin-bottom:2px;">🚀 RUTE TERCEPAT SAAT INI</p><h5 style="color:#ffffff; margin-top:0;">-</h5>', unsafe_allow_html=True)
+            st.markdown('<p style="color:#94a3b8; font-size:11px; margin-bottom:2px; font-weight:600;">🚀 RUTE TERCEPAT SAAT INI</p><h5 style="color:#ffffff; margin-top:0; font-weight:700;">-</h5>', unsafe_allow_html=True)
             
     st.write("---")
     
@@ -288,5 +288,5 @@ with kolom_kanan:
     """
     
     components.html(html_code, height=480)
-    st.markdown("<p style='color: #64748b; font-size: 12px; text-align: center; margin-top:10px;'>⚡ RUTE TERCEPAT di-highlight otomatis dengan jalur warna merah menyala menyala secara real-time.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #94a3b8; font-size: 12px; text-align: center; margin-top:10px;'>⚡ RUTE TERCEPAT di-highlight otomatis dengan jalur warna merah menyala secara real-time.</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
