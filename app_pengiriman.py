@@ -288,7 +288,5 @@ with kolom_kanan:
     """
     
     components.html(html_code, height=480)
-    st.markdown("<p style='color: #94a3b8; font-size: 12px; text-align: center; margin-top:10px;'>
-    
-                ⚡ RUTE TERCEPAT di-highlight otomatis dengan jalur warna merah menyala secara real-time.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #94a3b8; font-size: 12px; text-align: center; margin-top:10px;'>⚡ RUTE TERCEPAT di-highlight otomatis dengan jalur warna merah menyala secara real-time.</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
