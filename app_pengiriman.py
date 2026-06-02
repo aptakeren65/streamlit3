@@ -148,7 +148,7 @@ with kolom_kiri:
     # Tab 1: Create
     with tab1:
         st.write("##")
-        pilihan_input = st.radio("Pilih Jenis Komponen:", ["Titik Kota Baru (Node)", "Jalur Antar Kota (Edge)"], horizontal=True)
+        pilihan_input = st.radio("Pilih Jenis Komponen:", ["Titik Kota Baru ", "Jalur Antar Kota "], horizontal=True)
         st.write("---")
         
         if pilihan_input == "Titik Kota Baru (Node)":
