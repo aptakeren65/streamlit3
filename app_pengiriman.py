@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from streamlit_agraph import agraph, Node, Edge, Config
+from streamlit_agraph import agraph
 
 # Konfigurasi halaman agar melebar penuh (Wide Mode)
 st.set_page_config(layout="wide", page_title="Logistics Graph App")
